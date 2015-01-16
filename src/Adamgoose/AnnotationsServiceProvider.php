@@ -7,6 +7,9 @@ use Illuminate\Support\ServiceProvider;
 use Adamgoose\Events\Annotations\Scanner as EventScanner;
 use Adamgoose\Routing\Annotations\Scanner as RouteScanner;
 
+use Doctrine\Common\Annotations\AnnotationRegistry;
+use Symfony\Component\Finder\Finder;
+
 class AnnotationsServiceProvider extends ServiceProvider {
 
     /**
@@ -73,11 +76,31 @@ class AnnotationsServiceProvider extends ServiceProvider {
      */
     public function boot()
     {
+        $this->setUpAnnotationRegistries();
+
         $this->loadAnnotatedEvents();
 
         if ( ! $this->app->routesAreCached())
         {
             $this->loadAnnotatedRoutes();
+        }
+    }
+
+    /**
+     * Register annotations directories with annotation registry
+     *
+     * @return  void
+     */
+    public function setUpAnnotationRegistries()
+    {
+        foreach (Finder::create()->files()->in(__DIR__.'/Events/Annotations/Annotations') as $file)
+        {
+            AnnotationRegistry::registerFile($file->getRealPath());
+        }
+
+        foreach (Finder::create()->files()->in(__DIR__.'/Routing/Annotations/Annotations') as $file)
+        {
+            AnnotationRegistry::registerFile($file->getRealPath());
         }
     }
 

@@ -4,42 +4,16 @@ use ReflectionClass;
 use Symfony\Component\Finder\Finder;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Doctrine\Common\Annotations\SimpleAnnotationReader;
+use Adamgoose\AnnotationScanner;
 
-class Scanner {
+class Scanner extends AnnotationScanner {
 
 	/**
-	 * The path to scan for annotations.
+	 * The namespaces of the annotations to use
 	 *
 	 * @var array
 	 */
-	protected $scan;
-
-	/**
-	 * Create a new scanner instance.
-	 *
-	 * @param  array  $scan
-	 * @return void
-	 */
-	public function __construct(array $scan)
-	{
-		$this->scan = $scan;
-
-		foreach (Finder::create()->files()->in(__DIR__.'/Annotations') as $file)
-		{
-			AnnotationRegistry::registerFile($file->getRealPath());
-		}
-	}
-
-	/**
-	 * Create a new scanner instance.
-	 *
-	 * @param  array  $scan
-	 * @return static
-	 */
-	public static function create(array $scan)
-	{
-		return new static($scan);
-	}
+	public $namespaces = ['Adamgoose\Routing\Annotations\Annotations'];
 
 	/**
 	 * Convert the scanned annotations into route definitions.
@@ -116,43 +90,6 @@ class Scanner {
 
 		foreach ($annotations as $annotation)
 			$annotation->modify($endpoint, $class->getMethod($method));
-	}
-
-	/**
-	 * Get all of the ReflectionClass instances in the scan array.
-	 *
-	 * @return array
-	 */
-	protected function getClassesToScan()
-	{
-		$classes = [];
-
-		foreach ($this->scan as $scan)
-		{
-			try
-			{
-				$classes[] = new ReflectionClass($scan);
-			}
-			catch (Exception $e)
-			{
-				//
-			}
-		}
-
-		return $classes;
-	}
-
-	/**
-	 * Get an annotation reader instance.
-	 *
-	 * @return \Doctrine\Common\Annotations\SimpleAnnotationReader
-	 */
-	protected function getReader()
-	{
-		with($reader = new SimpleAnnotationReader)
-				->addNamespace('Adamgoose\Routing\Annotations\Annotations');
-
-		return $reader;
 	}
 
 }
